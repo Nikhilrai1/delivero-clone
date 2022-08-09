@@ -1,9 +1,26 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { View, Text, ScrollView } from 'react-native'
-import {ArrowRightIcon} from "react-native-heroicons/outline"
-import RestaurantCard from './RestaurantCard'
+import { ArrowRightIcon } from "react-native-heroicons/outline"
+import RestaurantCard from './RestaurantCard';
+import sanityClient from '../sanity';
 
-const FeaturedRow = ({ title, description, featuredCategory }) => {
+const FeaturedRow = ({ id, title, description }) => {
+    const [restaurants, setRestaurants] = useState([]);
+    useEffect(() => {
+        sanityClient.fetch(`
+        *[_type == "featured" && _id == $id] {
+            ...,
+            restaurants[]->{
+                ...,
+                dishes[]->,
+                type-> {
+                    name
+                }
+            }
+        }[0]`, { id }).then(data => setRestaurants(data?.restaurants))
+    }, [])
+
+    console.log(restaurants)
     return (
         <View>
             <View className="mt-4 flex-row justify-between items-center px-4">
@@ -19,53 +36,26 @@ const FeaturedRow = ({ title, description, featuredCategory }) => {
                 className="pt-4"
                 showHorizontalScrollIndicator={false}
             >
-            
-            <RestaurantCard 
-             id="123"
-             imgUrl="https://assets.vogue.in/photos/61d84b5b9db8964401d2b0e4/3:4/w_2303,h_3071,c_limit/15%20best%20multi-cuisine%20restaurants%20in%20Mumbai,%20New%20Delhi,%20Bengaluru,%20Kolkata%20and%20Goa.jpg"
-             title="Yo! sushi"
-             rating={4.5}
-             genre="Japanese"
-             address="123 main st"
-             short_description="This is a famous restro"
-             dishes={[]}
-             long={20}
-             lat={0}
-            />
-              <RestaurantCard 
-             id="123"
-             imgUrl="https://assets.vogue.in/photos/61d84b5b9db8964401d2b0e4/3:4/w_2303,h_3071,c_limit/15%20best%20multi-cuisine%20restaurants%20in%20Mumbai,%20New%20Delhi,%20Bengaluru,%20Kolkata%20and%20Goa.jpg"
-             title="Yo! sushi"
-             rating={4.5}
-             genre="Japanese"
-             address="123 main st"
-             short_description="This is a famous restro"
-             dishes={[]}
-             long={20}
-             lat={0}
-            />  <RestaurantCard 
-            id="123"
-            imgUrl="https://assets.vogue.in/photos/61d84b5b9db8964401d2b0e4/3:4/w_2303,h_3071,c_limit/15%20best%20multi-cuisine%20restaurants%20in%20Mumbai,%20New%20Delhi,%20Bengaluru,%20Kolkata%20and%20Goa.jpg"
-            title="Yo! sushi"
-            rating={4.5}
-            genre="Japanese"
-            address="123 main st"
-            short_description="This is a famous restro"
-            dishes={[]}
-            long={20}
-            lat={0}
-           />  <RestaurantCard 
-           id="123"
-           imgUrl="https://assets.vogue.in/photos/61d84b5b9db8964401d2b0e4/3:4/w_2303,h_3071,c_limit/15%20best%20multi-cuisine%20restaurants%20in%20Mumbai,%20New%20Delhi,%20Bengaluru,%20Kolkata%20and%20Goa.jpg"
-           title="Yo! sushi"
-           rating={4.5}
-           genre="Japanese"
-           address="123 main st"
-           short_description="This is a famous restro"
-           dishes={[]}
-           long={20}
-           lat={0}
-          />
+
+                {
+                    restaurants?.map(restaurant => {
+                        return (
+                            <RestaurantCard
+                                key={restaurant._id}
+                                id={restaurant._id}
+                                imgUrl={restaurant.image}
+                                title={restaurant.name}
+                                rating={restaurant.rating}
+                                genre={restaurant.type?.name}
+                                address={restaurant.address}
+                                short_description={restaurant.short_description}
+                                dishes={restaurant.dishes}
+                                long={restaurant.long}
+                                lat={restaurant.lat}
+                            />
+                        )
+                    })
+                }
             </ScrollView>
         </View>
     )

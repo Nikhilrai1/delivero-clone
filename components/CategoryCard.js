@@ -2,6 +2,7 @@ import { View, Text, Image, TouchableOpacity } from 'react-native'
 import React from 'react'
 
 const CategoryCard = ({imgUrl,title }) => {
+    console.log(title)
     return (
         <TouchableOpacity className="mr-2 relative">
             <Image
