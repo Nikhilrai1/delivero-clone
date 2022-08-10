@@ -84,7 +84,7 @@ const RestuarantScreen = () => {
             name={dish.name}
             description={dish.short_description}
             price={dish.price}
-            image={urlFor(dish.image).url()}
+            imgUrl={urlFor(dish.image).url()}
             />
           ))
         }
