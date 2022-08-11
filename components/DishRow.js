@@ -8,13 +8,16 @@ import { addToBasket, removeFromBasket, selectBasketItems, selectBasketItemsWith
 const DishRow = ({ id, name, description, price, imgUrl }) => {
   const [isPressed, setIsPressed] = useState(false);
   const items = useSelector(state => selectBasketItemsWithId(state,id));
+  console.log(items)
   const dispatch = useDispatch();
   const addItemToBasket = () => {
     dispatch(addToBasket({ id, name, description, price, imgUrl }))
   }
 
   const removeItemFromBasket = () => {
-    if(!items.length > 0) return;
+    console.log("remove")
+    console.log(items.length)
+    if(items.length <= 0) return;
     dispatch(removeFromBasket({ id }))
   }
 
