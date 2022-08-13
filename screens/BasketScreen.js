@@ -1,11 +1,10 @@
 import { View, Text, SafeAreaView, TouchableOpacity, Image, ScrollView } from 'react-native'
-import React, { useMemo, useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigation } from '@react-navigation/native'
 import { useDispatch, useSelector } from 'react-redux';
 import { selectRestaurant } from '../features/restaurantSlice';
 import { removeFromBasket, selectBasketItems } from '../features/basketSlice';
 import { XCircleIcon } from 'react-native-heroicons/solid';
-import { urlFor } from '../sanity';
 import Currency from "react-currency-formatter";
 import { selectBasketTotal } from '../features/basketSlice';
 
@@ -13,19 +12,17 @@ const BasketScreen = () => {
     const navigation = useNavigation();
     const restaurant = useSelector(selectRestaurant);
     const items = useSelector(selectBasketItems);
-    const [groupedItemsInBasket, setGroupedItemsInBasket] = useState();
+    const [groupedItemsInBasket, setGroupedItemsInBasket] = useState([]);
     const dispatch = useDispatch();
     const basketTotal = useSelector(selectBasketTotal)
 
-    // useMemo(() => {
-    //     const groupedItems = items.forEach((item) => {
-            
-    //         console.log(item)
-    //         // return results;
-    //     })
-    //     setGroupedItemsInBasket(groupedItems)
-    // }, [items])
-    // console.log(groupedItemsInBasket)
+    useEffect(() => {
+        const groupedItems = items.reduce((results, item) => {
+            (results[item.id] = results[item.id] || []).push(item)
+            return results;
+        }, {})
+        setGroupedItemsInBasket(groupedItems)
+    }, [items])
     return (
         <SafeAreaView className="flex-1 bg-white">
             <View className="flex-1 bg-gray-100">
@@ -54,22 +51,22 @@ const BasketScreen = () => {
                     </TouchableOpacity>
                 </View>
                 <ScrollView className="divide-y divide-gray-200">
-                    {items.map((item) => {
+                    {Object.entries(groupedItemsInBasket).map(([key, item]) => {
                         return (
-                            <View key={item._id} className="flex-row items-center space-x-3 bg-white py-2 px-5">
-                                <Text className="text-[#00CCBB]">{items.length} x</Text>
+                            <View key={key} className="flex-row items-center space-x-3 bg-white py-2 px-5">
+                                <Text className="text-[#00CCBB]">{item.length} x</Text>
                                 <Image
-                                    source={{ uri: urlFor(item?.imgUrl).url() }}
+                                    source={{ uri: item[0]?.imgUrl }}
                                     className="h-12 w-12 rounded-full"
                                 />
-                                <Text className="flex-1">{item?.name}</Text>
+                                <Text className="flex-1">{item[0]?.name}</Text>
                                 <Text className="text-gray-600">
-                                    <Currency quantity={item?.price} currency="EUR" />
+                                    <Currency quantity={item[0]?.price} currency="EUR" />
                                 </Text>
                                 <TouchableOpacity>
                                     <Text
                                         className="text-[#00CCBB] text-xs"
-                                        onPress={() => dispatch(removeFromBasket({ id: item._id }))}
+                                        onPress={() => dispatch(removeFromBasket({id: item[0].id}))}
                                     >
                                         Remove
                                     </Text>
@@ -79,23 +76,23 @@ const BasketScreen = () => {
                     })}
                 </ScrollView>
                 <View className="p-5 bg-white mt-5 space-y-4">
-                    <View className="flex-row justify-between"> 
+                    <View className="flex-row justify-between">
                         <Text className="text-gray-400">Subtotal</Text>
                         <Text className="text-gray-400">
-                            <Currency quantity={basketTotal} currency="EUR"/>
+                            <Currency quantity={basketTotal} currency="EUR" />
                         </Text>
                     </View>
 
-                    <View className="flex-row justify-between"> 
+                    <View className="flex-row justify-between">
                         <Text className="text-gray-400">Delivery Fee</Text>
                         <Text className="text-gray-400">
-                            <Currency quantity={5.99} currency="EUR"/>
+                            <Currency quantity={5.99} currency="EUR" />
                         </Text>
                     </View>
-                    <View className="flex-row justify-between"> 
+                    <View className="flex-row justify-between">
                         <Text className="text-gray-400">Order Total</Text>
                         <Text className="font-extrabold">
-                            <Currency quantity={basketTotal + 5.99} currency="EUR"/>
+                            <Currency quantity={basketTotal + 5.99} currency="EUR" />
                         </Text>
                     </View>
                     <TouchableOpacity onPress={() => navigation.navigate("PreparingOrder")} className="rounded-lg bg-[#00CCBB] p-4">
